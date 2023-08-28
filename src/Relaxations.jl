@@ -20,7 +20,7 @@ end
 function relaxSheraliAdams1(model, problem::Problem, option::Option)::Stat
    # variables
    @variables(model, begin 
-      x[j in 1:problem.num_vars] 
+      0 <= x[j in 1:problem.num_vars] <= 1
       y[i in 1:problem.num_terms_nl]
    end) 
 
