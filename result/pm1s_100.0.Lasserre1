@@ -1,4 +1,5 @@
 instance: pm1s_100.0
-obj: 143.2334011673792
-time: 14.166228332003811
-algo: Lasserre1
+obj: 143.23339823690037
+time: 7.080372831784189
+algo: Lasserre
+level: 1

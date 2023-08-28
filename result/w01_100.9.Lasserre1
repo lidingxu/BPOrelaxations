@@ -1,4 +1,5 @@
 instance: w01_100.9
-obj: 816.0788059468409
-time: 31.585932780988514
-algo: Lasserre1
+obj: 816.0787801849007
+time: 8.1936638019979
+algo: Lasserre
+level: 1

@@ -16,7 +16,7 @@ struct Option
    thread::Int             # thread number
    silent::Bool            # silent model
 
-   function Option(algorithm::Algorithm, level::Int=1, time_limit::Float64=360.0, log_level::Int=1, thread::Int=1, silent::Bool=true)
+   function Option(algorithm::Algorithm, level::Int=1, time_limit::Float64=3600.0, log_level::Int=1, thread::Int=1, silent::Bool=true)
       new(algorithm, level, time_limit, log_level, thread, silent)
    end
 end

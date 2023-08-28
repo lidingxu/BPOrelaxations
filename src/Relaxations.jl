@@ -20,8 +20,8 @@ end
 function relaxSheraliAdams1(model, problem::Problem, option::Option)::Stat
    # variables
    @variables(model, begin 
-      0 <= x[j in 1:problem.num_vars]  <= 1
-      0 <= y[i in 1:problem.num_terms_nl] <= 1
+      x[j in 1:problem.num_vars] 
+      y[i in 1:problem.num_terms_nl]
    end) 
 
    # constraints
@@ -78,8 +78,8 @@ function relaxLasserre1(model, problem::Problem, option::Option)::Stat
    matsize = 1+problem.num_vars
    # variables
    @variables(model, begin 
-      0 <= x[j in 1:problem.num_vars]  <= 1
-      0 <= y[i in 1:problem.num_terms_nl] <= 1
+       x[j in 1:problem.num_vars] 
+       y[i in 1:problem.num_terms_nl] 
       X[1:matsize, 1:matsize]
    end) 
 

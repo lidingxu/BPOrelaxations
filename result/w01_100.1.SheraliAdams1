@@ -1,4 +1,5 @@
 instance: w01_100.1
-obj: 1325.0000000018495
-time: 0.018661573994904757
-algo: SheraliAdams1
+obj: 5.0
+time: 0.004221729002892971
+algo: SheraliAdams
+level: 1

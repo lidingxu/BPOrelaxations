@@ -1,4 +1,5 @@
 instance: pm1s_80.2
-obj: 165.00000011421673
-time: 0.013244856003439054
-algo: SheraliAdams1
+obj: 2.0
+time: 0.003331468440592289
+algo: SheraliAdams
+level: 1

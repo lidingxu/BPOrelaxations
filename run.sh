@@ -11,8 +11,10 @@ runInstance() {
     algo=$3
     result_dir=$4
 
-    ${jualia_bin}  "${project_dir}/experiment/runbenchmark.jl" "$benchmark_dir" "$instance" "$algo" "$result_dir"
-                
+    if ! [ -f "${result_dir}/${instance}" ]
+    then 
+      ${jualia_bin}  "${project_dir}/experiment/runbenchmark.jl" "$benchmark_dir" "$instance" "$algo" "$result_dir"
+    fi           
 }
 export -f runInstance
 
