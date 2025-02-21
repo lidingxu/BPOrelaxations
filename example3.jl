@@ -9,7 +9,7 @@ f = [0,1,1,-1,0]
 terms = [([2,3], -c[1]), ([1,3,4], -c[2]), ([3,5], -c[3])]
 
 # print f
-f_string = ""
+f_string = "f:"
 
 # Add the terms from `terms`
 for (i, term) in enumerate(terms)
@@ -36,7 +36,7 @@ fa = f0 - sum(c)
 
 
 # print fb
-fb_string = ""
+fb_string = "fb: "
 
 # Add the terms from `terms`
 for (i, term) in enumerate(terms)
@@ -59,7 +59,7 @@ for (i, term) in enumerate(f)
 end
 
 # print fc
-fc_string = ""
+fc_string = "fc:"
 
 # Add the terms from `terms`
 for (i, term) in enumerate(terms)
@@ -83,35 +83,9 @@ for (i, term) in enumerate(f)
 end
 
 print(f_string, "\n")
-print(fa, "\n")
+print("fa:", fa, "\n")
 print(fb_string, "\n")
 print(fc_string, "\n")
-
-model = Model()
-
-
-@variable(model, rholeft[1:3] >= 0)
-@variable(model, rhomiddle[i in 1:3, j in terms[i][1]] >= 0)
-@variable(model, rhoright[j in 1:5])
-@variable(model, shortleft[j in 1:5])
-
-@constraints(model, begin
-    [i in 1:3], rholeft[i] <= c[i]
-    [j in 1:5], rhoright[j] <= f[j]
-    [i in 1:3], rholeft[i] == sum(rhomiddle[i, j] for j in  terms[i][1])
-    [j in 1:5], shortleft[j] + sum(rhomiddle[i, j] for i in  1:3 if j in terms[i][1]) == rhoright[j]
-end)
-
-
-@objective(model, Max,  sum(rhoright[j] for j in  1:5) + fa)
-
-set_optimizer(model, Mosek.Optimizer)
-optimize!(model)
-print(objective_bound(model))
-print(value.(rhoright), value.(shortleft))
-print(model)
-print(termination_status(model))
-
 
 using IterTools
 
@@ -131,4 +105,62 @@ for (i, vec) in enumerate(binary_vectors)
         minvec = i
     end
 end
-print((minval, binary_vectors[minvec]))
+print("minimum and value of f by enumeration:", (minval, binary_vectors[minvec]), "\n")
+
+modelcut = Model()
+
+# Binary variables for the cut: 1 if on source side, 0 if on sink side
+@variable(modelcut, edgeleft[1:3] >= 0)
+@variable(modelcut, edgemiddle[i in 1:3, j in terms[i][1]] >= 0)
+@variable(modelcut, edgeright[j in 1:5] >= 0)
+
+@variable(modelcut, labelleft[1:3] >= 0)  # For left nodes
+@variable(modelcut, labelright[1:5] >= 0)  # For right nodes
+
+# Objective: minimize the capacity of the cut
+@objective(modelcut, Min, sum(c[i] * edgeleft[i] for i in 1:3) + sum(edgemiddle[i, j] * 1000 for i in 1:3 for j in terms[i][1])
+                      +  sum(max(f[j], 0) * edgeright[j] for j in 1:5))
+
+# Cut constraints: if source node is in S, destination must also be in S
+@constraints(modelcut, begin
+    [j in 2:2], edgeright[j] == 0
+    [i in 1:3], edgeleft[i] - 1  +  labelleft[i] >= 0
+    [j in 1:5], edgeright[j] - labelright[j] >= 0
+    [i in 1:3, j in terms[i][1]], edgemiddle[i, j] - labelleft[i] + labelright[j] >= 0
+end)
+
+
+
+set_silent(modelcut)
+set_optimizer(modelcut, Mosek.Optimizer)
+optimize!(modelcut)
+
+print("network cut model for min(fc), min cut value:", objective_bound(modelcut), "\n")
+print("label left:", value.(labelleft), "edge left:", value.(value.(edgeleft)),
+ "label right:", value.(labelright),  "edge right:", value.(value.(edgeright)),"\n")
+
+model = Model()
+
+
+@variable(model, flowleft[1:3] >= 0)
+@variable(model, flowmiddle[i in 1:3, j in terms[i][1]] >= 0)
+@variable(model, flowright[j in 1:5])
+@variable(model, shortleft[j in 1:5])
+
+@constraints(model, begin
+    [i in 1:3], flowleft[i] <= c[i]
+    [j in 1:5], flowright[j] <= f[j]
+    [i in 1:3], flowleft[i] == sum(flowmiddle[i, j] for j in  terms[i][1])
+    [j in 1:5], shortleft[j] + sum(flowmiddle[i, j] for i in  1:3 if j in terms[i][1]) == flowright[j]
+end)
+
+
+@objective(model, Max,  sum(flowright[j] for j in  1:5) + fa)
+set_silent(model)
+set_optimizer(model, Mosek.Optimizer)
+optimize!(model)
+print("network flow model for min(f), max flow value:",objective_bound(model),"\n")
+print("network flow model: ", model)
+print("network cut model: ", modelcut)
+
+#print(termination_status(model))
